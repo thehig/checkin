@@ -143,7 +143,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       await refresh();
       setLastSyncTime(Date.now());
       setSyncStatus('synced');
-      showSuccess('Data synced successfully');
+      // Removed success notification - status dot provides visual feedback
     } catch (error) {
       console.error('Sync error:', error);
       setSyncStatus('error');

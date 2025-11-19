@@ -105,6 +105,13 @@ export function ManageTopics() {
           </button>
         </div>
 
+        <div className="card bg-blue-50 border-blue-200 mb-4">
+          <p className="text-sm text-gray-700">
+            💡 <strong>Tip:</strong> Create topics for things you want to track (like medications, meals, sleep, etc.). 
+            Each topic can have its own custom axes. The Wellness Check topic is predefined and protected.
+          </p>
+        </div>
+
         {showNewTopic && (
           <div className="card mb-4 space-y-3">
             <input

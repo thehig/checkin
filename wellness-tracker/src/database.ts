@@ -69,46 +69,21 @@ export async function initializeDefaultData() {
   const topicsCount = await db.topics.count();
   
   if (topicsCount === 0) {
-    // Create default topics first
-    const defaultTopics: Topic[] = [
-      {
-        id: 'topic-wellness',
-        name: 'Wellness Check',
-        description: 'Track your mental, physical, and emotional wellbeing',
-        icon: '✨',
-        color: '#A78BFA',
-        displayOrder: 0,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      {
-        id: 'topic-wakeup',
-        name: 'Wake Up',
-        description: 'Start of the day',
-        icon: '🌅',
-        color: '#FCD34D',
-        displayOrder: 1,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      {
-        id: 'topic-medication',
-        name: 'Take Medication',
-        description: 'ADHD medication',
-        icon: '💊',
-        color: '#60A5FA',
-        displayOrder: 2,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-    ];
+    // Only create the predefined Wellness Check topic
+    const wellnessTopic: Topic = {
+      id: 'topic-wellness',
+      name: 'Wellness Check',
+      description: 'Track your mental, physical, and emotional wellbeing',
+      icon: '✨',
+      color: '#A78BFA',
+      displayOrder: 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
     
-    // Use put instead of bulkAdd to handle duplicates
-    for (const topic of defaultTopics) {
-      await db.topics.put(topic);
-    }
+    await db.topics.put(wellnessTopic);
     
-    // Create default wellness axes (belonging to Wellness topic)
+    // Create the 3 wellness axes (belonging to Wellness topic)
     const wellnessAxes: Axis[] = [
       {
         id: 'axis-mental',
@@ -145,7 +120,6 @@ export async function initializeDefaultData() {
       },
     ];
     
-    // Use put instead of bulkAdd to handle duplicates
     for (const axis of wellnessAxes) {
       await db.axes.put(axis);
     }

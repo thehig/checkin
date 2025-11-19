@@ -73,7 +73,7 @@ export function QuickEntry() {
 
     try {
       await reorderTopics(reordered);
-      showSuccess('Topic order updated');
+      // Removed success notification - visual reordering is feedback enough
     } catch (error) {
       showError('Failed to reorder topics');
     }
