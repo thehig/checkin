@@ -33,15 +33,33 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - Network first, fallback to cache
 self.addEventListener('fetch', (event) => {
+  // Skip caching for:
+  // 1. POST, PUT, DELETE requests (only cache GET requests)
+  // 2. API calls to external services (Supabase, etc.)
+  // 3. Chrome extensions and other non-http(s) requests
+  if (
+    event.request.method !== 'GET' ||
+    event.request.url.includes('/rest/v1/') ||
+    event.request.url.includes('supabase.co') ||
+    !event.request.url.startsWith('http')
+  ) {
+    // Just fetch without caching
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clone the response
-        const responseToCache = response.clone();
-        
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+        // Only cache successful responses
+        if (response && response.status === 200 && response.type === 'basic') {
+          // Clone the response
+          const responseToCache = response.clone();
+          
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
         
         return response;
       })

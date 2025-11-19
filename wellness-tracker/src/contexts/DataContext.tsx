@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { db, initializeDefaultData } from '../database';
 import { syncToCloud, syncFromCloud, deleteFromCloud } from '../supabase';
+import { useNotification } from './NotificationContext';
 import type { Axis, Topic, Event, Reminder, ReminderInstance } from '../types';
 
 type SyncStatus = 'synced' | 'syncing' | 'offline' | 'error';
@@ -66,6 +67,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [syncQueue, setSyncQueue] = useState<Set<string>>(new Set());
+  
+  const { showSuccess, showError } = useNotification();
 
   const refresh = async () => {
     const [axesData, topicsData, eventsData, remindersData, instancesData] = await Promise.all([
@@ -109,22 +112,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         // Push local changes to cloud
         const localData = await dbTable.toArray();
         if (localData.length > 0) {
-          await syncToCloud(tableName, localData, userId);
+          const { error } = await syncToCloud(tableName, localData, userId);
+          if (error) {
+            console.error(`Error syncing ${tableName} to cloud:`, error);
+            throw error;
+          }
         }
         
         // Pull cloud changes and merge
-        const { data: cloudData } = await syncFromCloud(tableName, userId);
+        const { data: cloudData, error } = await syncFromCloud(tableName, userId);
+        if (error) {
+          console.error(`Error syncing ${tableName} from cloud:`, error);
+          throw error;
+        }
+        
         if (cloudData && cloudData.length > 0) {
           // Merge strategy: last write wins based on updatedAt
           for (const cloudItem of cloudData) {
             const localItem = await dbTable.get(cloudItem.id);
-            if (!localItem || cloudItem.updated_at > localItem.updatedAt) {
+            if (!localItem || cloudItem.updatedAt > localItem.updatedAt) {
               // Cloud version is newer or doesn't exist locally
-              await dbTable.put({
-                ...cloudItem,
-                createdAt: cloudItem.created_at,
-                updatedAt: cloudItem.updated_at,
-              });
+              // Data is already in camelCase from syncFromCloud
+              await dbTable.put(cloudItem);
             }
           }
         }
@@ -133,9 +142,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       await refresh();
       setLastSyncTime(Date.now());
       setSyncStatus('synced');
+      showSuccess('Data synced successfully');
     } catch (error) {
       console.error('Sync error:', error);
       setSyncStatus('error');
+      showError(`Sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

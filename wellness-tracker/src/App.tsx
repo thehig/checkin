@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider, useData } from './contexts/DataContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import { QuickEntry } from './components/QuickEntry';
 import { EventHistory } from './components/EventHistory';
 import { ManageTopics } from './components/ManageTopics';
@@ -138,11 +139,13 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <AppContent />
-      </DataProvider>
-    </AuthProvider>
+    <NotificationProvider>
+      <AuthProvider>
+        <DataProvider>
+          <AppContent />
+        </DataProvider>
+      </AuthProvider>
+    </NotificationProvider>
   );
 }
 

@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useData } from '../contexts/DataContext';
+import { useNotification } from '../contexts/NotificationContext';
 import type { Topic, EventAxis } from '../types';
 import { Check } from 'lucide-react';
 
 export function QuickEntry() {
   const { topics, getAxesByTopic, addEvent } = useData();
+  const { showSuccess, showError } = useNotification();
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [axisValues, setAxisValues] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
 
   const handleTopicSelect = (topic: Topic) => {
     setSelectedTopic(topic);
@@ -24,27 +26,32 @@ export function QuickEntry() {
   const handleSubmit = async () => {
     if (!selectedTopic) return;
 
-    const topicAxes = getAxesByTopic(selectedTopic.id);
-    const eventAxes: EventAxis[] = topicAxes.map(axis => ({
-      axisId: axis.id,
-      value: axisValues[axis.id] || 3,
-    }));
+    try {
+      const topicAxes = getAxesByTopic(selectedTopic.id);
+      const eventAxes: EventAxis[] = topicAxes.map(axis => ({
+        axisId: axis.id,
+        value: axisValues[axis.id] || 3,
+      }));
 
-    await addEvent({
-      topicId: selectedTopic.id,
-      timestamp: Date.now(),
-      axes: eventAxes,
-      notes: notes.trim() || undefined,
-    });
+      await addEvent({
+        topicId: selectedTopic.id,
+        timestamp: Date.now(),
+        axes: eventAxes,
+        notes: notes.trim() || undefined,
+      });
 
-    // Reset form
-    setSelectedTopic(null);
-    setAxisValues({});
-    setNotes('');
-    
-    // Show success message
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
+      // Reset form
+      setSelectedTopic(null);
+      setAxisValues({});
+      setNotes('');
+      
+      // Show success message
+      showSuccess('Event logged successfully!');
+      setShowSuccessScreen(true);
+      setTimeout(() => setShowSuccessScreen(false), 2000);
+    } catch (error) {
+      showError(`Failed to log event: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const handleCancel = () => {
@@ -53,7 +60,7 @@ export function QuickEntry() {
     setNotes('');
   };
 
-  if (showSuccess) {
+  if (showSuccessScreen) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <div className="bg-green-100 text-green-800 rounded-full p-4 mb-4">
@@ -96,7 +103,7 @@ export function QuickEntry() {
   const topicAxes = getAxesByTopic(selectedTopic.id);
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-6 pb-32">
       <div className="text-center">
         <div className="text-5xl mb-2">{selectedTopic.icon || '📝'}</div>
         <h1 className="text-2xl font-bold text-gray-900">{selectedTopic.name}</h1>
@@ -152,7 +159,7 @@ export function QuickEntry() {
         />
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-10">
+      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-lg">
         <div className="max-w-2xl mx-auto flex gap-3">
           <button
             onClick={handleCancel}
