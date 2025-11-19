@@ -6,48 +6,52 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Auth helpers
-export const signInWithGoogle = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: window.location.origin,
-    },
-  });
-  return { data, error };
-};
-
-export const signInWithApple = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'apple',
-    options: {
-      redirectTo: window.location.origin,
-    },
-  });
-  return { data, error };
-};
-
-export const signOut = async () => {
-  const { error } = await supabase.auth.signOut();
-  return { error };
-};
-
-export const getCurrentUser = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-};
-
 // Sync helpers
-export const syncToCloud = async (table: string, data: any[]) => {
+export const syncToCloud = async (table: string, data: any[], userId: string) => {
+  if (!userId) return { error: new Error('User not authenticated') };
+  
+  // Add user_id to all records
+  const dataWithUserId = data.map(item => ({
+    ...item,
+    user_id: userId,
+  }));
+  
   const { error } = await supabase
     .from(table)
-    .upsert(data);
+    .upsert(dataWithUserId, { 
+      onConflict: 'id',
+      ignoreDuplicates: false 
+    });
+  
   return { error };
 };
 
-export const syncFromCloud = async (table: string) => {
+export const syncFromCloud = async (table: string, userId: string) => {
+  if (!userId) return { data: null, error: new Error('User not authenticated') };
+  
   const { data, error } = await supabase
     .from(table)
-    .select('*');
+    .select('*')
+    .eq('user_id', userId);
+  
   return { data, error };
 };
+
+export const deleteFromCloud = async (table: string, id: string, userId: string) => {
+  if (!userId) return { error: new Error('User not authenticated') };
+  
+  const { error } = await supabase
+    .from(table)
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+  
+  return { error };
+};
+
+// Helper to check if Supabase is configured
+export const isSupabaseConfigured = () => {
+  return SUPABASE_URL && SUPABASE_ANON_KEY && 
+         SUPABASE_URL !== '' && SUPABASE_ANON_KEY !== '';
+};
+

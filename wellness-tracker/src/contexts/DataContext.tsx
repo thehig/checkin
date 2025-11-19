@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { db, initializeDefaultData } from '../database';
+import { syncToCloud, syncFromCloud, deleteFromCloud } from '../supabase';
 import type { Axis, Topic, Event, Reminder, ReminderInstance } from '../types';
+
+type SyncStatus = 'synced' | 'syncing' | 'offline' | 'error';
 
 interface DataContextType {
   axes: Axis[];
@@ -9,8 +12,17 @@ interface DataContextType {
   reminders: Reminder[];
   reminderInstances: ReminderInstance[];
   
+  // Sync status
+  syncStatus: SyncStatus;
+  lastSyncTime: number | undefined;
+  
   // Helper methods
   getAxesByTopic: (topicId: string) => Axis[];
+  
+  // Sync operations
+  syncNow: (userId: string) => Promise<void>;
+  enableAutoSync: (userId: string) => void;
+  disableAutoSync: () => void;
   
   // Axes operations
   addAxis: (axis: Omit<Axis, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
@@ -47,6 +59,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState<Event[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [reminderInstances, setReminderInstances] = useState<ReminderInstance[]>([]);
+  
+  // Sync state
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('offline');
+  const [lastSyncTime, setLastSyncTime] = useState<number | undefined>();
+  const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [syncQueue, setSyncQueue] = useState<Set<string>>(new Set());
 
   const refresh = async () => {
     const [axesData, topicsData, eventsData, remindersData, instancesData] = await Promise.all([
@@ -73,22 +92,112 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return axes.filter(axis => axis.topicId === topicId);
   };
 
+  // Sync methods
+  const syncNow = async (userId: string) => {
+    if (!userId) return;
+    
+    setSyncStatus('syncing');
+    try {
+      // Sync each table
+      const tables = ['axes', 'topics', 'events', 'reminders', 'reminder_instances'];
+      const dbTables = [db.axes, db.topics, db.events, db.reminders, db.reminderInstances];
+      
+      for (let i = 0; i < tables.length; i++) {
+        const tableName = tables[i];
+        const dbTable = dbTables[i];
+        
+        // Push local changes to cloud
+        const localData = await dbTable.toArray();
+        if (localData.length > 0) {
+          await syncToCloud(tableName, localData, userId);
+        }
+        
+        // Pull cloud changes and merge
+        const { data: cloudData } = await syncFromCloud(tableName, userId);
+        if (cloudData && cloudData.length > 0) {
+          // Merge strategy: last write wins based on updatedAt
+          for (const cloudItem of cloudData) {
+            const localItem = await dbTable.get(cloudItem.id);
+            if (!localItem || cloudItem.updated_at > localItem.updatedAt) {
+              // Cloud version is newer or doesn't exist locally
+              await dbTable.put({
+                ...cloudItem,
+                createdAt: cloudItem.created_at,
+                updatedAt: cloudItem.updated_at,
+              });
+            }
+          }
+        }
+      }
+      
+      await refresh();
+      setLastSyncTime(Date.now());
+      setSyncStatus('synced');
+    } catch (error) {
+      console.error('Sync error:', error);
+      setSyncStatus('error');
+    }
+  };
+
+  const enableAutoSync = (userId: string) => {
+    setCurrentUserId(userId);
+    setAutoSyncEnabled(true);
+  };
+
+  const disableAutoSync = () => {
+    setAutoSyncEnabled(false);
+    setCurrentUserId(null);
+    setSyncStatus('offline');
+  };
+
+  // Auto-sync effect
+  useEffect(() => {
+    if (autoSyncEnabled && currentUserId) {
+      // Initial sync
+      syncNow(currentUserId);
+      
+      // Periodic sync every 5 minutes
+      const interval = setInterval(() => {
+        syncNow(currentUserId);
+      }, 5 * 60 * 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [autoSyncEnabled, currentUserId]);
+
+  // Trigger sync when data changes (debounced)
+  useEffect(() => {
+    if (autoSyncEnabled && currentUserId && syncQueue.size > 0) {
+      const timeout = setTimeout(() => {
+        syncNow(currentUserId);
+        setSyncQueue(new Set());
+      }, 2000); // 2 second debounce
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [syncQueue, autoSyncEnabled, currentUserId]);
+
   // Axes operations
   const addAxis = async (axis: Omit<Axis, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `axis-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = Date.now();
     await db.axes.add({ ...axis, id, createdAt: now, updatedAt: now });
     await refresh();
+    if (autoSyncEnabled) setSyncQueue(prev => new Set(prev).add('axes'));
     return id;
   };
 
   const updateAxis = async (id: string, updates: Partial<Axis>) => {
     await db.axes.update(id, { ...updates, updatedAt: Date.now() });
     await refresh();
+    if (autoSyncEnabled) setSyncQueue(prev => new Set(prev).add('axes'));
   };
 
   const deleteAxis = async (id: string) => {
     await db.axes.delete(id);
+    if (autoSyncEnabled && currentUserId) {
+      await deleteFromCloud('axes', id, currentUserId);
+    }
     await refresh();
   };
 
@@ -98,16 +207,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const now = Date.now();
     await db.topics.add({ ...topic, id, createdAt: now, updatedAt: now });
     await refresh();
+    if (autoSyncEnabled) setSyncQueue(prev => new Set(prev).add('topics'));
     return id;
   };
 
   const updateTopic = async (id: string, updates: Partial<Topic>) => {
     await db.topics.update(id, { ...updates, updatedAt: Date.now() });
     await refresh();
+    if (autoSyncEnabled) setSyncQueue(prev => new Set(prev).add('topics'));
   };
 
   const deleteTopic = async (id: string) => {
     await db.topics.delete(id);
+    if (autoSyncEnabled && currentUserId) {
+      await deleteFromCloud('topics', id, currentUserId);
+    }
     await refresh();
   };
 
@@ -118,6 +232,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const newEvent = { ...event, id, createdAt: now, updatedAt: now };
     await db.events.add(newEvent);
     await refresh();
+    if (autoSyncEnabled) setSyncQueue(prev => new Set(prev).add('events'));
     
     // Check for reminders that should be triggered
     await checkAndScheduleReminders(newEvent);
@@ -128,10 +243,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const updateEvent = async (id: string, updates: Partial<Event>) => {
     await db.events.update(id, { ...updates, updatedAt: Date.now() });
     await refresh();
+    if (autoSyncEnabled) setSyncQueue(prev => new Set(prev).add('events'));
   };
 
   const deleteEvent = async (id: string) => {
     await db.events.delete(id);
+    if (autoSyncEnabled && currentUserId) {
+      await deleteFromCloud('events', id, currentUserId);
+    }
     await refresh();
   };
 
@@ -214,7 +333,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     events,
     reminders,
     reminderInstances,
+    syncStatus,
+    lastSyncTime,
     getAxesByTopic,
+    syncNow,
+    enableAutoSync,
+    disableAutoSync,
     addAxis,
     updateAxis,
     deleteAxis,
