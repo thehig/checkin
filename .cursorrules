@@ -1,0 +1,491 @@
+# Wellness Tracker - ADHD-Focused Design Guidelines
+
+This project follows neurodivergent-friendly design principles, specifically optimized for users with ADHD and autism. All UI/UX decisions should adhere to these evidence-based guidelines.
+
+---
+
+## 🎯 Core Principles
+
+### 1. **Cognitive Load Reduction**
+
+- Minimize the number of choices presented at once
+- Break complex tasks into simple, single-step actions
+- Use progressive disclosure (show only what's needed now)
+- Limit information density on each screen
+
+### 2. **Distraction Minimization**
+
+- AVOID auto-playing content, animations, or videos
+- AVOID pop-ups, modals, or intrusive notifications (except critical errors)
+- AVOID blinking, flashing, or rapidly moving elements
+- AVOID unnecessary success toasts for routine actions
+- Use subtle, non-intrusive feedback (dots, icons, colors)
+
+### 3. **Predictability and Consistency**
+
+- Maintain consistent layouts across all pages
+- Use the same components in the same locations
+- Keep navigation patterns predictable
+- Ensure button labels remain consistent
+
+---
+
+## 🎨 Visual Design
+
+### **Layout & Spacing**
+
+```
+✅ DO:
+- Use generous white space (minimum 16px padding)
+- Create clear visual separation between sections
+- Maintain clean, uncluttered layouts
+- Use consistent grid systems
+- Group related items visually
+
+❌ DON'T:
+- Overcrowd the interface
+- Use dense layouts with little breathing room
+- Mix multiple visual styles on one screen
+```
+
+### **Color Palette**
+
+```
+✅ DO:
+- Use muted, calm colors (avoid oversaturation)
+- Ensure 4.5:1 contrast ratio minimum (WCAG AA)
+- Use color consistently (same action = same color)
+- Test for colorblindness accessibility
+- Provide color AND icon/text indicators (never color alone)
+
+❌ DON'T:
+- Use bright, clashing color combinations
+- Rely solely on color to convey meaning
+- Use red/green only for status (colorblind issues)
+```
+
+**Recommended Palette:**
+
+- **Primary Actions:** Blue (#3B82F6) - calming, professional
+- **Success:** Green (#10B981) - subtle, not alarming
+- **Warning:** Yellow (#F59E0B) - informative, not panic-inducing
+- **Error:** Red (#EF4444) - clear but not overwhelming
+- **Background:** Light grays (#F9FAFB, #F3F4F6)
+- **Text:** Dark gray (#111827) on light backgrounds
+
+### **Typography**
+
+```
+✅ DO:
+- Use sans-serif fonts (Arial, Inter, Poppins, Open Sans)
+- Maintain 16px minimum font size
+- Use 1.5-1.7 line height for body text
+- Create clear visual hierarchy with size/weight
+- Left-align text (easier to scan)
+
+❌ DON'T:
+- Use serif fonts for body text
+- Use small font sizes (<14px)
+- Use all-caps for long text
+- Center-align paragraphs
+- Use decorative or script fonts
+```
+
+**Font Hierarchy:**
+
+- H1: 24-32px, bold
+- H2: 20-24px, semibold
+- H3: 18-20px, semibold
+- Body: 16px, regular
+- Small: 14px, regular
+
+### **Icons & Imagery**
+
+```
+✅ DO:
+- Use clear, simple icons with text labels
+- Ensure icons are large enough to understand (24px+)
+- Provide alt text for all images
+- Use emojis sparingly for visual interest
+
+❌ DON'T:
+- Use abstract or ambiguous icons without labels
+- Rely on icons alone (always pair with text)
+- Use tiny icons (<20px)
+```
+
+---
+
+## 🧭 Navigation & Interaction
+
+### **Navigation Patterns**
+
+```
+✅ DO:
+- Use bottom navigation on mobile (thumb-friendly)
+- Keep navigation visible and consistent
+- Limit top-level navigation items (3-5 max)
+- Show current location clearly
+- Use breadcrumbs for multi-level navigation
+
+❌ DON'T:
+- Hide navigation behind hamburger menus unnecessarily
+- Change navigation structure between pages
+- Use hover-only menus
+```
+
+### **Forms & Inputs**
+
+```
+✅ DO:
+- Use clear, descriptive labels above inputs
+- Show one question/section at a time when possible
+- Provide inline validation with helpful messages
+- Use large touch targets (minimum 44x44px)
+- Auto-save progress (prevent data loss)
+- Allow users to go back and edit
+
+❌ DON'T:
+- Use placeholder text as labels (disappears on focus)
+- Require all fields at once
+- Use cryptic error messages
+- Have tiny checkboxes or radio buttons
+- Impose time limits on forms
+```
+
+### **Buttons & CTAs**
+
+```
+✅ DO:
+- Make primary actions visually prominent
+- Use descriptive button text ("Save Event" not "Submit")
+- Provide clear hover/focus states
+- Keep buttons in predictable locations
+- Size appropriately (min 44x44px for touch)
+
+❌ DON'T:
+- Use vague labels ("OK", "Continue")
+- Place destructive actions next to primary actions
+- Make buttons blend into the background
+- Change button locations between screens
+```
+
+---
+
+## 📢 Feedback & Notifications
+
+### **When to Use Notifications**
+
+```
+✅ USE NOTIFICATIONS FOR:
+- Critical errors that prevent action
+- Destructive action confirmations
+- First-time onboarding tips (dismissible)
+
+❌ DON'T USE NOTIFICATIONS FOR:
+- Routine success messages (use status indicators)
+- Non-critical information
+- Marketing or upsells
+- Every single user action
+```
+
+### **Notification Design**
+
+```
+✅ DO:
+- Keep messages short and actionable
+- Use icons to indicate type (✓ ✗ ⚠ ℹ)
+- Auto-dismiss after 3-5 seconds (or allow manual dismiss)
+- Position consistently (top-right or bottom)
+- Limit to 1-2 notifications at once
+
+❌ DON'T:
+- Use attention-grabbing animations
+- Play sounds (unless user-configured)
+- Block content or require dismissal
+- Show multiple toasts simultaneously
+```
+
+### **Status Indicators (Preferred)**
+
+```
+✅ DO:
+- Use subtle status dots for sync state
+- Provide tooltips on hover for more info
+- Keep indicators visible but unobtrusive
+- Use color + icon for clarity
+
+Example: Sync status dot
+🟢 = Synced
+🟡 = Syncing/Offline
+🔴 = Error (+ error toast)
+```
+
+---
+
+## 📝 Content & Readability
+
+### **Writing Style**
+
+```
+✅ DO:
+- Use short sentences (15-20 words max)
+- Break content into bullet points
+- Start with most important information
+- Use active voice
+- Avoid jargon and complex terminology
+- Provide summaries/key takeaways
+
+❌ DON'T:
+- Write long, dense paragraphs
+- Use academic or overly formal language
+- Bury important information
+- Use double negatives
+```
+
+### **Content Structure**
+
+```
+✅ DO:
+- Use clear headings and subheadings
+- Create visual hierarchy with size/weight/color
+- Number steps in sequences
+- Provide progress indicators for multi-step tasks
+- Use tables or lists for data (not prose)
+
+❌ DON'T:
+- Present walls of text
+- Use complex nested structures
+- Hide important info in footnotes
+```
+
+---
+
+## ⚡ Interactions & Animations
+
+### **Animation Guidelines**
+
+```
+✅ DO:
+- Use subtle transitions (200-300ms)
+- Animate intentionally (show cause/effect)
+- Provide prefers-reduced-motion support
+- Keep animations smooth (60fps)
+
+❌ DON'T:
+- Auto-play animations on load
+- Use bounce/elastic easing (too playful/distracting)
+- Animate multiple elements simultaneously
+- Use animations >500ms
+```
+
+### **Loading States**
+
+```
+✅ DO:
+- Show clear loading indicators
+- Provide progress bars for long operations
+- Maintain layout (no content jumps)
+- Allow cancellation of long tasks
+
+❌ DON'T:
+- Leave users wondering if something is happening
+- Use spinners without context
+- Cause layout shifts when loading completes
+```
+
+---
+
+## 🎮 Task Completion
+
+### **Quick Entry Workflow**
+
+```
+✅ DO:
+- Minimize steps to complete primary task (2-3 max)
+- Use smart defaults
+- Remember user preferences
+- Provide "quick actions" for common tasks
+- Auto-save progress
+
+❌ DON'T:
+- Require navigation through multiple screens
+- Ask for unnecessary information
+- Make users repeat selections
+- Lose data on accidental navigation
+```
+
+### **Progressive Disclosure**
+
+```
+✅ DO:
+- Show essential options first
+- Hide advanced options behind "More" or "Advanced"
+- Expand sections on demand
+- Maintain context when expanding
+
+❌ DON'T:
+- Show all options at once
+- Require scrolling to find basics
+- Hide critical features
+```
+
+---
+
+## ♿ Accessibility
+
+### **Keyboard Navigation**
+
+```
+✅ DO:
+- Support full keyboard navigation (Tab, Enter, Esc)
+- Show clear focus indicators
+- Maintain logical tab order
+- Provide keyboard shortcuts for power users
+
+❌ DON'T:
+- Trap focus in modals
+- Remove focus outlines
+- Create keyboard-only content
+```
+
+### **Screen Readers**
+
+```
+✅ DO:
+- Use semantic HTML (nav, main, article, etc.)
+- Provide alt text for images
+- Use ARIA labels where needed
+- Announce dynamic content changes
+
+❌ DON'T:
+- Use divs for everything
+- Leave images without alt text
+- Create unlabeled form fields
+```
+
+---
+
+## 📱 Mobile-First Design
+
+### **Touch Targets**
+
+```
+✅ DO:
+- Minimum 44x44px touch targets
+- Add padding around interactive elements
+- Separate links/buttons by adequate spacing
+- Make drag handles obvious and large
+
+❌ DON'T:
+- Place interactive elements too close together
+- Use tiny buttons or links
+- Require precise tapping
+```
+
+### **Mobile Interactions**
+
+```
+✅ DO:
+- Support swipe gestures where appropriate
+- Use bottom navigation (thumb zone)
+- Minimize typing requirements
+- Provide large form inputs
+
+❌ DON'T:
+- Require hover interactions
+- Hide navigation above the fold
+- Use desktop interaction patterns
+```
+
+---
+
+## 🔧 Customization & Preferences
+
+### **User Control**
+
+```
+✅ PROVIDE:
+- Dark mode toggle (if implemented)
+- Font size adjustment
+- Animation on/off toggle
+- Notification preferences
+- Focus mode (minimal distractions)
+
+❌ DON'T:
+- Force users into one experience
+- Require account to save preferences
+- Make settings hard to find
+```
+
+---
+
+## 🧪 Testing Checklist
+
+Before shipping any UI change, verify:
+
+- [ ] Layout is clean with adequate white space
+- [ ] No auto-playing content or animations
+- [ ] Colors meet WCAG AA contrast standards
+- [ ] Font sizes are 16px or larger
+- [ ] Touch targets are 44x44px minimum
+- [ ] Success actions don't trigger toasts (use status indicators)
+- [ ] Error messages are clear and actionable
+- [ ] Keyboard navigation works fully
+- [ ] Focus indicators are visible
+- [ ] Screen reader announces content correctly
+- [ ] Works on mobile (320px width minimum)
+- [ ] No reliance on color alone for meaning
+- [ ] Consistent with existing patterns
+- [ ] Tested with prefers-reduced-motion
+- [ ] Auto-save prevents data loss
+
+---
+
+## 🎯 Project-Specific Rules
+
+### **Wellness Tracker Context**
+
+- **Primary User:** 30s woman with ADHD and mild autism
+- **Primary Task:** Log events quickly with minimal friction
+- **Key Need:** Not be overwhelmed or distracted
+
+### **Specific Implementations**
+
+1. **No Success Toasts for:**
+
+   - Event logging (use success screen instead)
+   - Sync completion (use status dot)
+   - Reordering topics (visual feedback is enough)
+
+2. **Use Toasts Only for:**
+
+   - Errors that prevent action
+   - Destructive action warnings
+   - First-time feature discovery (once only)
+
+3. **Quick Entry Priority:**
+
+   - 2 taps to log an event (topic → save)
+   - Large, visual topic cards
+   - Generous spacing between elements
+   - No required fields (log what you want)
+
+4. **Visual Hierarchy:**
+   - Wellness Check first (always)
+   - User topics sorted by display order
+   - Drag handles clearly visible
+   - Status dots subtle but present
+
+---
+
+## 📚 References
+
+- [ADHD-Friendly Web Design: 10 Accessibility Tips](https://a11yimpact.com/blog/adhd-friendly-websites)
+- [How to Make a Website Neurodivergent Friendly](https://www.extramiledigital.com/how-to-make-a-website-neurodivergent-friendly/)
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [Inclusive Design Principles](https://inclusivedesignprinciples.org/)
+
+---
+
+**Remember:** When in doubt, simplify. Less is more for ADHD users.
