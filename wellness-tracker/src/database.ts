@@ -21,6 +21,7 @@ export class WellnessDatabase extends Dexie {
   constructor() {
     super('WellnessTrackerDB');
     
+    // Version 1: Original schema
     this.version(1).stores({
       axes: 'id, name, createdAt',
       topics: 'id, name, createdAt',
@@ -29,6 +30,23 @@ export class WellnessDatabase extends Dexie {
       reminderInstances: 'id, reminderId, scheduledTime, status',
       users: 'id, email, supabaseId',
       settings: 'id, userId',
+    });
+    
+    // Version 2: Updated schema with axes belonging to topics
+    this.version(2).stores({
+      axes: 'id, topicId, name, createdAt',
+      topics: 'id, name, createdAt',
+      events: 'id, topicId, timestamp, createdAt',
+      reminders: 'id, name, isActive, triggerEventTopicId, nextScheduled',
+      reminderInstances: 'id, reminderId, scheduledTime, status',
+      users: 'id, email, supabaseId',
+      settings: 'id, userId',
+    }).upgrade(async tx => {
+      // Migration: Clear old data and reinitialize
+      // This is safe for development - in production you'd want more sophisticated migration
+      await tx.table('axes').clear();
+      await tx.table('topics').clear();
+      await tx.table('events').clear();
     });
   }
 }
@@ -40,10 +58,44 @@ export async function initializeDefaultData() {
   const axesCount = await db.axes.count();
   
   if (axesCount === 0) {
-    // Create default wellness axes
-    const defaultAxes: Axis[] = [
+    // Create default topics first
+    const defaultTopics: Topic[] = [
+      {
+        id: 'topic-wellness',
+        name: 'Wellness Check',
+        description: 'Track your mental, physical, and emotional wellbeing',
+        icon: '✨',
+        color: '#A78BFA',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      {
+        id: 'topic-wakeup',
+        name: 'Wake Up',
+        description: 'Start of the day',
+        icon: '🌅',
+        color: '#FCD34D',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      {
+        id: 'topic-medication',
+        name: 'Take Medication',
+        description: 'ADHD medication',
+        icon: '💊',
+        color: '#60A5FA',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+    ];
+    
+    await db.topics.bulkAdd(defaultTopics);
+    
+    // Create default wellness axes (belonging to Wellness topic)
+    const wellnessAxes: Axis[] = [
       {
         id: 'axis-mental',
+        topicId: 'topic-wellness',
         name: 'Mental',
         description: 'Mental clarity and focus',
         icon: '🧠',
@@ -54,6 +106,7 @@ export async function initializeDefaultData() {
       },
       {
         id: 'axis-physical',
+        topicId: 'topic-wellness',
         name: 'Physical',
         description: 'Physical energy and wellbeing',
         icon: '💪',
@@ -64,6 +117,7 @@ export async function initializeDefaultData() {
       },
       {
         id: 'axis-emotional',
+        topicId: 'topic-wellness',
         name: 'Emotional',
         description: 'Emotional state and mood',
         icon: '❤️',
@@ -74,45 +128,6 @@ export async function initializeDefaultData() {
       },
     ];
     
-    await db.axes.bulkAdd(defaultAxes);
-    
-    // Create default topics
-    const defaultTopics: Topic[] = [
-      {
-        id: 'topic-wakeup',
-        name: 'Wake Up',
-        description: 'Start of the day',
-        icon: '🌅',
-        axisIds: [],
-        includeWellnessCheck: true,
-        color: '#FCD34D',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      {
-        id: 'topic-medication',
-        name: 'Take Medication',
-        description: 'ADHD medication',
-        icon: '💊',
-        axisIds: [],
-        includeWellnessCheck: false,
-        color: '#60A5FA',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      {
-        id: 'topic-wellness',
-        name: 'Wellness Check',
-        description: 'Check in with yourself',
-        icon: '✨',
-        axisIds: ['axis-mental', 'axis-physical', 'axis-emotional'],
-        includeWellnessCheck: true,
-        color: '#A78BFA',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-    ];
-    
-    await db.topics.bulkAdd(defaultTopics);
+    await db.axes.bulkAdd(wellnessAxes);
   }
 }

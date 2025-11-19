@@ -11,6 +11,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE axes (
   id TEXT PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  topic_id TEXT NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
   icon TEXT,
@@ -27,8 +28,6 @@ CREATE TABLE topics (
   name TEXT NOT NULL,
   description TEXT,
   icon TEXT,
-  axis_ids JSONB DEFAULT '[]',
-  include_wellness_check BOOLEAN DEFAULT false,
   color TEXT,
   created_at BIGINT NOT NULL,
   updated_at BIGINT NOT NULL
@@ -41,7 +40,6 @@ CREATE TABLE events (
   topic_id TEXT NOT NULL,
   timestamp BIGINT NOT NULL,
   axes JSONB DEFAULT '[]',
-  wellness_check JSONB,
   notes TEXT,
   created_at BIGINT NOT NULL,
   updated_at BIGINT NOT NULL
@@ -137,6 +135,7 @@ CREATE POLICY "Users can delete their own reminder instances" ON reminder_instan
 
 -- Create indexes for better performance
 CREATE INDEX idx_axes_user_id ON axes(user_id);
+CREATE INDEX idx_axes_topic_id ON axes(topic_id);
 CREATE INDEX idx_topics_user_id ON topics(user_id);
 CREATE INDEX idx_events_user_id ON events(user_id);
 CREATE INDEX idx_events_timestamp ON events(timestamp);

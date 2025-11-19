@@ -4,23 +4,19 @@ import type { Topic, EventAxis } from '../types';
 import { Check } from 'lucide-react';
 
 export function QuickEntry() {
-  const { topics, axes, addEvent } = useData();
+  const { topics, getAxesByTopic, addEvent } = useData();
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [axisValues, setAxisValues] = useState<Record<string, number>>({});
-  const [wellnessValues, setWellnessValues] = useState({
-    mental: 3,
-    physical: 3,
-    emotional: 3,
-  });
   const [notes, setNotes] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleTopicSelect = (topic: Topic) => {
     setSelectedTopic(topic);
     // Initialize axis values
+    const topicAxes = getAxesByTopic(topic.id);
     const initialValues: Record<string, number> = {};
-    topic.axisIds.forEach(axisId => {
-      initialValues[axisId] = 3;
+    topicAxes.forEach(axis => {
+      initialValues[axis.id] = 3;
     });
     setAxisValues(initialValues);
   };
@@ -28,23 +24,22 @@ export function QuickEntry() {
   const handleSubmit = async () => {
     if (!selectedTopic) return;
 
-    const eventAxes: EventAxis[] = selectedTopic.axisIds.map(axisId => ({
-      axisId,
-      value: axisValues[axisId] || 3,
+    const topicAxes = getAxesByTopic(selectedTopic.id);
+    const eventAxes: EventAxis[] = topicAxes.map(axis => ({
+      axisId: axis.id,
+      value: axisValues[axis.id] || 3,
     }));
 
     await addEvent({
       topicId: selectedTopic.id,
       timestamp: Date.now(),
       axes: eventAxes,
-      wellnessCheck: selectedTopic.includeWellnessCheck ? wellnessValues : undefined,
       notes: notes.trim() || undefined,
     });
 
     // Reset form
     setSelectedTopic(null);
     setAxisValues({});
-    setWellnessValues({ mental: 3, physical: 3, emotional: 3 });
     setNotes('');
     
     // Show success message
@@ -98,10 +93,10 @@ export function QuickEntry() {
     );
   }
 
-  const topicAxes = axes.filter(axis => selectedTopic.axisIds.includes(axis.id));
+  const topicAxes = getAxesByTopic(selectedTopic.id);
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-24">
       <div className="text-center">
         <div className="text-5xl mb-2">{selectedTopic.icon || '📝'}</div>
         <h1 className="text-2xl font-bold text-gray-900">{selectedTopic.name}</h1>
@@ -144,43 +139,6 @@ export function QuickEntry() {
         </div>
       )}
 
-      {selectedTopic.includeWellnessCheck && (
-        <div className="space-y-4">
-          <h2 className="font-semibold text-gray-900">Wellness Check</h2>
-          
-          {(['mental', 'physical', 'emotional'] as const).map(type => (
-            <div key={type} className="card space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">
-                    {type === 'mental' ? '🧠' : type === 'physical' ? '💪' : '❤️'}
-                  </span>
-                  <span className="font-medium text-gray-900 capitalize">{type}</span>
-                </div>
-                <span className="text-xl font-bold text-primary-600">
-                  {wellnessValues[type].toFixed(1)}
-                </span>
-              </div>
-              
-              <input
-                type="range"
-                min="0"
-                max="5"
-                step="0.5"
-                value={wellnessValues[type]}
-                onChange={(e) => setWellnessValues({ ...wellnessValues, [type]: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
-              />
-              
-              <div className="flex justify-between text-xs text-gray-500">
-                <span>Worst</span>
-                <span>Best</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
       <div className="card">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Notes (optional)
@@ -194,19 +152,21 @@ export function QuickEntry() {
         />
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex gap-3">
-        <button
-          onClick={handleCancel}
-          className="btn btn-secondary flex-1"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSubmit}
-          className="btn btn-primary flex-1"
-        >
-          Save Event
-        </button>
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-10">
+        <div className="max-w-2xl mx-auto flex gap-3">
+          <button
+            onClick={handleCancel}
+            className="btn btn-secondary flex-1"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="btn btn-primary flex-1"
+          >
+            Save Event
+          </button>
+        </div>
       </div>
     </div>
   );

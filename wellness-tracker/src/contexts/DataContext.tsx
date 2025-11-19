@@ -9,6 +9,9 @@ interface DataContextType {
   reminders: Reminder[];
   reminderInstances: ReminderInstance[];
   
+  // Helper methods
+  getAxesByTopic: (topicId: string) => Axis[];
+  
   // Axes operations
   addAxis: (axis: Omit<Axis, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   updateAxis: (id: string, updates: Partial<Axis>) => Promise<void>;
@@ -64,6 +67,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     initializeDefaultData().then(refresh);
   }, []);
+
+  // Helper methods
+  const getAxesByTopic = (topicId: string) => {
+    return axes.filter(axis => axis.topicId === topicId);
+  };
 
   // Axes operations
   const addAxis = async (axis: Omit<Axis, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -206,6 +214,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     events,
     reminders,
     reminderInstances,
+    getAxesByTopic,
     addAxis,
     updateAxis,
     deleteAxis,

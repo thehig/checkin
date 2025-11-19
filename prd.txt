@@ -1,0 +1,111 @@
+I want to create a web app for my Wife to 
+
+- Keep track of her spoons on 3 primary axis: Mental, Physical, Emotional
+
+- Allow user to create their own "topics" and "axis"
+
+  - A "Topic" is something the user wants to track: Headaches, Bowel Movements, Taking medications etc
+
+  - An "Axis" is a scale the user will use to evaluate their performance
+
+  - Each "Axis" will record a single decimal value between 0.0 and 5.0
+
+- Allow user to track "Events"
+
+  - An "Event" is a Topic,, along with N Axis and their corrosponding values
+
+  - Every event can also contain a wellnes check "Topic" with axis Mental Physical and Emotional
+
+- Allow user to set smart reminders that will occur at after a specific event type
+
+  - eg: 
+
+      - Take meds 45 minutes after waking up, or by 9:30am
+
+      - After taking meds, schedule next meds alarm for 1 hour later, repeating 3 times
+
+It should:
+
+- Provide an extremely quick way to pick a topic and a status combination, and have optional room for notes
+
+- Store all the data in a local database and sync with a cloud database, maybe supabase or similar
+
+- Run as a PWA on IOS or whatever "installable web app" that an IOS user would need
+
+- Use some kind of OAuth type account system to allow logging in with an apple or google account
+
+- Have a mobile/tablet first responsive design
+
+- Be able to send the user alarm notifications at their request (eg: At 930am or 45 minutes after I wake up: Alarm to take medication)
+
+- Be able to rank tasks and records on multiple axis: Mental, Physical and Emotional, and a scale from 1 to 5
+
+User is:
+
+- Mid 30s intelligent woman
+
+- Person with ADHD and mild Autism
+
+- Forgetful and needs to be reminded to take scheduled medication
+
+- Can't rely on a time based approach due to personal quirks, needs to be able to reference A happens after B or at X O'Clock
+
+- Needs to be able to keep track of many known elements, as well as be able to add their own types of events
+
+Example Use Case:
+
+- User gets up at 7am: Logs "Wake Up" event
+
+- User enters a "Wellness" event: (Emotional: 4/5, Physical: 1/5, Mental: 2/5) (5 is best, 1 is worst)
+
+- 45 minutes after Wake Up event user is prompted with scheduled "Take ADHD Meds".
+
+  - This will spawn further reminders. eg: 3 hours after take ADHD meds is take instant release meds
+
+  - Reminders can be snoozed, muted or resolved with an option to add a wellness check
+
+- At 8:30 user records a "Breakfast" event
+
+  - User has self-defined the "axis" for recording this event (Although it's always 1 - 5)
+
+  - Axis are "Protein: 1/5, Fiber: 3/5) (5 is good/high, 1 is bad/low)
+
+- At 9:00 user records a "Bathroom event"
+
+  - Users defined axis are "Straining, Ease, Cleanup"
+
+Example Interaction:
+
+- Press 'dashboard' icon to open app
+
+- Immediately presented with data entry page
+
+- Choose topic (breakfast, medications, etc. All user defined)
+
+- App shows the Axis for the topic (Sliders 1 - 5 with a representative icon. Decimal values are supported to 1 digit eg: 3.5)
+
+- Fill in as much or as little data as user wants
+
+- Optionally: Include a "wellness" report
+
+
+
+UI Design:
+
+
+
+- Clean uncluttered design language
+
+- Avoid overstimulating user
+
+- Separate Editing mode for Topics/Axis and Data-Entry mode
+
+
+
+Future Ideas:
+
+- Graphing/Visualizing dataset
+
+- Nice UI/UX
+
+- Exporting raw data to google sheets, excel, csv etc

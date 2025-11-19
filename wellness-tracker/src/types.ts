@@ -1,5 +1,6 @@
 export interface Axis {
   id: string;
+  topicId: string; // Axis belongs to exactly one Topic
   name: string;
   description?: string;
   icon?: string;
@@ -14,8 +15,6 @@ export interface Topic {
   name: string;
   description?: string;
   icon?: string;
-  axisIds: string[]; // References to Axis
-  includeWellnessCheck: boolean;
   color?: string;
   createdAt: number;
   updatedAt: number;
@@ -31,11 +30,6 @@ export interface Event {
   topicId: string;
   timestamp: number;
   axes: EventAxis[];
-  wellnessCheck?: {
-    mental: number;
-    physical: number;
-    emotional: number;
-  };
   notes?: string;
   createdAt: number;
   updatedAt: number;

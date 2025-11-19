@@ -61,35 +61,6 @@ export function EventHistory() {
               </div>
             )}
 
-            {event.wellnessCheck && (
-              <div className="pt-2 border-t border-gray-200">
-                <div className="text-xs font-medium text-gray-700 mb-2">Wellness Check</div>
-                <div className="grid grid-cols-3 gap-2 text-sm">
-                  <div className="text-center">
-                    <div className="text-lg">🧠</div>
-                    <div className="font-semibold text-gray-900">
-                      {event.wellnessCheck.mental.toFixed(1)}
-                    </div>
-                    <div className="text-xs text-gray-500">Mental</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg">💪</div>
-                    <div className="font-semibold text-gray-900">
-                      {event.wellnessCheck.physical.toFixed(1)}
-                    </div>
-                    <div className="text-xs text-gray-500">Physical</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg">❤️</div>
-                    <div className="font-semibold text-gray-900">
-                      {event.wellnessCheck.emotional.toFixed(1)}
-                    </div>
-                    <div className="text-xs text-gray-500">Emotional</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {event.notes && (
               <div className="pt-2 border-t border-gray-200">
                 <div className="text-xs font-medium text-gray-700 mb-1">Notes</div>
