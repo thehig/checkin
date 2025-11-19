@@ -31,7 +31,7 @@ interface DataContextType {
   deleteAxis: (id: string) => Promise<void>;
   
   // Topics operations
-  addTopic: (topic: Omit<Topic, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  addTopic: (topic: Omit<Topic, 'id' | 'createdAt' | 'updatedAt' | 'displayOrder'>) => Promise<string>;
   updateTopic: (id: string, updates: Partial<Topic>) => Promise<void>;
   deleteTopic: (id: string) => Promise<void>;
   reorderTopics: (reorderedTopics: Topic[]) => Promise<void>;
@@ -214,7 +214,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Topics operations
-  const addTopic = async (topic: Omit<Topic, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addTopic = async (topic: Omit<Topic, 'id' | 'createdAt' | 'updatedAt' | 'displayOrder'>) => {
     const id = `topic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = Date.now();
     // Set displayOrder to be the highest + 1
