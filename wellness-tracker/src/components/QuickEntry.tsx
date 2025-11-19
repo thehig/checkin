@@ -149,20 +149,22 @@ export function QuickEntry() {
 
   if (!selectedTopic) {
     return (
-      <div className="space-y-4">
+      <section className="space-y-6">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
             <h1 className="text-2xl font-bold text-gray-900">What happened?</h1>
             <div 
               className={`w-3 h-3 rounded-full ${getSyncIndicatorColor()} animate-pulse`}
               title={getSyncIndicatorTitle()}
+              aria-label={getSyncIndicatorTitle()}
+              role="status"
             />
           </div>
           <p className="text-gray-600 mt-1">Select a topic to log</p>
-          <p className="text-xs text-gray-500 mt-2">Drag to reorder</p>
+          <p className="text-sm text-gray-500 mt-2">Drag to reorder</p>
         </div>
         
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {topics.map((topic, index) => (
             <div
               key={topic.id}
@@ -180,31 +182,35 @@ export function QuickEntry() {
             >
               <button
                 onClick={() => handleTopicSelect(topic)}
-                className={`card hover:shadow-md transition-all p-6 text-center space-y-2 w-full ${
+                className={`card hover:shadow-md transition-all p-6 text-center space-y-2 w-full focus-outline ${
                   draggedIndex === index ? 'opacity-50' : ''
                 }`}
                 style={{ borderColor: topic.color }}
+                aria-label={`Select ${topic.name} topic`}
               >
-                <div className="absolute top-2 left-2 text-gray-400 cursor-move">
-                  <GripVertical className="w-4 h-4" />
+                <div 
+                  className="absolute top-2 left-2 text-gray-400 cursor-move p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  aria-label="Drag to reorder topic"
+                >
+                  <GripVertical className="w-6 h-6" />
                 </div>
                 <div className="text-4xl">{topic.icon || '📝'}</div>
                 <div className="font-semibold text-gray-900">{topic.name}</div>
                 {topic.description && (
-                  <div className="text-xs text-gray-500">{topic.description}</div>
+                  <div className="text-sm text-gray-500">{topic.description}</div>
                 )}
               </button>
             </div>
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 
   const topicAxes = getAxesByTopic(selectedTopic.id);
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-8 pb-32">
       <div className="text-center">
         <div className="text-5xl mb-2">{selectedTopic.icon || '📝'}</div>
         <h1 className="text-2xl font-bold text-gray-900">{selectedTopic.name}</h1>
@@ -214,10 +220,10 @@ export function QuickEntry() {
       </div>
 
       {topicAxes.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="font-semibold text-gray-900">How was it?</h2>
+        <fieldset className="space-y-4">
+          <legend className="font-semibold text-gray-900 mb-2">How was it?</legend>
           {topicAxes.map(axis => (
-            <div key={axis.id} className="card space-y-3">
+            <div key={axis.id} className="card space-y-4 p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{axis.icon}</span>
@@ -235,28 +241,33 @@ export function QuickEntry() {
                 step="0.5"
                 value={axisValues[axis.id] || 3}
                 onChange={(e) => setAxisValues({ ...axisValues, [axis.id]: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600 focus-outline"
+                aria-label={`${axis.name} value: ${(axisValues[axis.id] || 3).toFixed(1)} out of 5`}
+                aria-valuemin={0}
+                aria-valuemax={5}
+                aria-valuenow={axisValues[axis.id] || 3}
               />
               
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-sm text-gray-600">
                 <span>{axis.minLabel || 'Low'}</span>
                 <span>{axis.maxLabel || 'High'}</span>
               </div>
             </div>
           ))}
-        </div>
+        </fieldset>
       )}
 
-      <div className="card">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="card p-6">
+        <label htmlFor="event-notes" className="block text-sm font-medium text-gray-700 mb-2">
           Notes (optional)
         </label>
         <textarea
+          id="event-notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Any additional notes..."
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none min-h-[44px] focus-outline"
         />
       </div>
 
@@ -265,12 +276,14 @@ export function QuickEntry() {
           <button
             onClick={handleCancel}
             className="btn btn-secondary flex-1"
+            aria-label="Cancel and return to topic selection"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             className="btn btn-primary flex-1"
+            aria-label="Save this event"
           >
             Save Event
           </button>

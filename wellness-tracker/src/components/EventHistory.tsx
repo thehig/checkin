@@ -51,14 +51,15 @@ export function EventHistory() {
 
   if (events.length === 0) {
     return (
-      <div className="space-y-4 pb-6">
+      <div className="space-y-6 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-gray-900">Event History</h1>
           {user && (
             <button
               onClick={handleSync}
               disabled={syncing || syncStatus === 'syncing'}
-              className="btn btn-primary flex items-center gap-2 text-sm"
+              className="btn btn-primary flex items-center gap-2 text-sm focus-outline min-h-[44px]"
+              aria-label="Sync data with cloud"
             >
               {getSyncStatusIcon()}
               Sync
@@ -67,7 +68,7 @@ export function EventHistory() {
         </div>
 
         {user && (
-          <div className="card bg-blue-50 border-blue-200">
+          <div className="card bg-blue-50 border-blue-200 p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {getSyncStatusIcon()}
@@ -78,7 +79,7 @@ export function EventHistory() {
                     {syncStatus === 'offline' && 'Offline'}
                     {syncStatus === 'error' && 'Sync error'}
                   </p>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-sm text-gray-600">
                     Last synced: {formatLastSync(lastSyncTime)}
                   </p>
                 </div>
@@ -97,14 +98,15 @@ export function EventHistory() {
   }
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-6 pb-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-900">Event History</h1>
         {user && (
           <button
             onClick={handleSync}
             disabled={syncing || syncStatus === 'syncing'}
-            className="btn btn-primary flex items-center gap-2 text-sm"
+            className="btn btn-primary flex items-center gap-2 text-sm focus-outline min-h-[44px]"
+            aria-label="Sync data with cloud"
           >
             {getSyncStatusIcon()}
             Sync
@@ -113,7 +115,7 @@ export function EventHistory() {
       </div>
 
       {user && (
-        <div className={`card ${
+        <div className={`card p-6 ${
           syncStatus === 'synced' ? 'bg-green-50 border-green-200' :
           syncStatus === 'error' ? 'bg-red-50 border-red-200' :
           syncStatus === 'offline' ? 'bg-gray-50 border-gray-200' :
@@ -129,7 +131,7 @@ export function EventHistory() {
                   {syncStatus === 'offline' && 'Offline'}
                   {syncStatus === 'error' && 'Sync error'}
                 </p>
-                <p className="text-xs text-gray-600">
+                <p className="text-sm text-gray-600">
                   Last synced: {formatLastSync(lastSyncTime)}
                 </p>
               </div>
@@ -143,15 +145,17 @@ export function EventHistory() {
         if (!topic) return null;
 
         return (
-          <div key={event.id} className="card space-y-3">
+          <article key={event.id} className="card space-y-3 p-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="text-3xl">{topic.icon || '📝'}</div>
+                <div className="text-3xl" aria-hidden="true">{topic.icon || '📝'}</div>
                 <div>
                   <h3 className="font-semibold text-gray-900">{topic.name}</h3>
                   <div className="flex items-center gap-1 text-sm text-gray-500">
-                    <Clock className="w-4 h-4" />
-                    {format(event.timestamp, 'MMM d, h:mm a')}
+                    <Clock className="w-4 h-4" aria-hidden="true" />
+                    <time dateTime={new Date(event.timestamp).toISOString()}>
+                      {format(event.timestamp, 'MMM d, h:mm a')}
+                    </time>
                   </div>
                 </div>
               </div>
@@ -166,7 +170,7 @@ export function EventHistory() {
                   return (
                     <div key={eventAxis.axisId} className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">
-                        {axis.icon} {axis.name}
+                        <span aria-hidden="true">{axis.icon}</span> {axis.name}
                       </span>
                       <span className="font-semibold text-primary-600">
                         {eventAxis.value.toFixed(1)}/5.0
@@ -179,11 +183,11 @@ export function EventHistory() {
 
             {event.notes && (
               <div className="pt-2 border-t border-gray-200">
-                <div className="text-xs font-medium text-gray-700 mb-1">Notes</div>
+                <div className="text-sm font-medium text-gray-700 mb-1">Notes</div>
                 <p className="text-sm text-gray-600">{event.notes}</p>
               </div>
             )}
-          </div>
+          </article>
         );
       })}
     </div>

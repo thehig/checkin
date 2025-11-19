@@ -69,7 +69,7 @@ export function Profile({ syncStatus, lastSyncTime, onSyncNow }: ProfileProps) {
     <div className="space-y-6 pb-6">
       <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
 
-      <div className="card">
+      <div className="card p-6">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
             <UserIcon className="w-8 h-8 text-primary-600" />
@@ -93,13 +93,14 @@ export function Profile({ syncStatus, lastSyncTime, onSyncNow }: ProfileProps) {
             {onSyncNow && syncStatus !== 'syncing' && (
               <button
                 onClick={onSyncNow}
-                className="text-sm text-primary-600 hover:text-primary-700"
+                className="text-sm text-primary-600 hover:text-primary-700 focus-outline rounded px-2 py-1"
+                aria-label="Sync data now"
               >
                 Sync Now
               </button>
             )}
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-sm text-gray-500">
             Last synced: {formatLastSync(lastSyncTime)}
           </p>
         </div>
@@ -107,7 +108,8 @@ export function Profile({ syncStatus, lastSyncTime, onSyncNow }: ProfileProps) {
         <button
           onClick={handleSignOut}
           disabled={loading}
-          className="w-full mt-4 btn btn-secondary flex items-center justify-center gap-2"
+          className="w-full mt-4 btn btn-secondary flex items-center justify-center gap-2 focus-outline"
+          aria-label="Sign out of your account"
         >
           {loading ? (
             <>
@@ -123,7 +125,7 @@ export function Profile({ syncStatus, lastSyncTime, onSyncNow }: ProfileProps) {
         </button>
       </div>
 
-      <div className="card">
+      <div className="card p-6">
         <h3 className="font-semibold text-gray-900 mb-2">About Cloud Sync</h3>
         <p className="text-sm text-gray-600 mb-3">
           Your data is automatically synced to the cloud when you're online. All data is stored locally and remains accessible even when offline.
@@ -135,7 +137,7 @@ export function Profile({ syncStatus, lastSyncTime, onSyncNow }: ProfileProps) {
         </ul>
       </div>
 
-      <div className="card bg-gray-50">
+      <div className="card bg-gray-50 p-6">
         <h3 className="font-semibold text-gray-900 mb-2">Account Details</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">

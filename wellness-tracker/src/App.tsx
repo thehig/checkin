@@ -69,64 +69,74 @@ function AppContent() {
         <div className="max-w-2xl mx-auto flex justify-around items-center">
           <button
             onClick={() => setCurrentView('home')}
-            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors focus-outline min-w-[44px] min-h-[44px] ${
               currentView === 'home'
                 ? 'text-primary-600 bg-primary-50'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
+            aria-label="Log new event"
+            aria-current={currentView === 'home' ? 'page' : undefined}
           >
             <Home className="w-6 h-6" />
-            <span className="text-xs font-medium">Log</span>
+            <span className="text-sm font-medium">Log</span>
           </button>
 
           <button
             onClick={() => setCurrentView('history')}
-            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors focus-outline min-w-[44px] min-h-[44px] ${
               currentView === 'history'
                 ? 'text-primary-600 bg-primary-50'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
+            aria-label="View event history"
+            aria-current={currentView === 'history' ? 'page' : undefined}
           >
             <Clock className="w-6 h-6" />
-            <span className="text-xs font-medium">History</span>
+            <span className="text-sm font-medium">History</span>
           </button>
 
           <button
             onClick={() => setCurrentView('reminders')}
-            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors focus-outline min-w-[44px] min-h-[44px] ${
               currentView === 'reminders'
                 ? 'text-primary-600 bg-primary-50'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
+            aria-label="Manage reminders"
+            aria-current={currentView === 'reminders' ? 'page' : undefined}
           >
             <Bell className="w-6 h-6" />
-            <span className="text-xs font-medium">Reminders</span>
+            <span className="text-sm font-medium">Reminders</span>
           </button>
 
           <button
             onClick={() => setCurrentView('manage')}
-            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors focus-outline min-w-[44px] min-h-[44px] ${
               currentView === 'manage'
                 ? 'text-primary-600 bg-primary-50'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
+            aria-label="Manage topics and axes"
+            aria-current={currentView === 'manage' ? 'page' : undefined}
           >
             <Settings className="w-6 h-6" />
-            <span className="text-xs font-medium">Manage</span>
+            <span className="text-sm font-medium">Manage</span>
           </button>
 
           <button
             onClick={() => user ? setCurrentView('profile') : setShowSignIn(true)}
-            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors relative ${
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors relative focus-outline min-w-[44px] min-h-[44px] ${
               currentView === 'profile'
                 ? 'text-primary-600 bg-primary-50'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
+            aria-label={user ? 'View profile' : 'Sign in to sync data'}
+            aria-current={currentView === 'profile' ? 'page' : undefined}
           >
             {user ? <User className="w-6 h-6" /> : <LogIn className="w-6 h-6" />}
-            <span className="text-xs font-medium">{user ? 'Profile' : 'Sign In'}</span>
+            <span className="text-sm font-medium">{user ? 'Profile' : 'Sign In'}</span>
             {user && syncStatus === 'synced' && (
-              <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full" aria-label="Synced"></div>
             )}
           </button>
         </div>
