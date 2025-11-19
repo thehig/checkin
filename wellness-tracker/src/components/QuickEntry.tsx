@@ -229,26 +229,28 @@ export function QuickEntry() {
                   <span className="text-2xl">{axis.icon}</span>
                   <span className="font-medium text-gray-900">{axis.name}</span>
                 </div>
-                <span className="text-xl font-bold text-primary-600">
+                <span className="text-2xl font-bold text-primary-600 min-w-[60px] text-right">
                   {(axisValues[axis.id] || 3).toFixed(1)}
                 </span>
               </div>
               
-              <input
-                type="range"
-                min="0"
-                max="5"
-                step="0.5"
-                value={axisValues[axis.id] || 3}
-                onChange={(e) => setAxisValues({ ...axisValues, [axis.id]: parseFloat(e.target.value) })}
-                className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600 focus-outline"
-                aria-label={`${axis.name} value: ${(axisValues[axis.id] || 3).toFixed(1)} out of 5`}
-                aria-valuemin={0}
-                aria-valuemax={5}
-                aria-valuenow={axisValues[axis.id] || 3}
-              />
+              <div className="py-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="5"
+                  step="0.5"
+                  value={axisValues[axis.id] || 3}
+                  onChange={(e) => setAxisValues({ ...axisValues, [axis.id]: parseFloat(e.target.value) })}
+                  className="w-full"
+                  aria-label={`${axis.name} value: ${(axisValues[axis.id] || 3).toFixed(1)} out of 5`}
+                  aria-valuemin={0}
+                  aria-valuemax={5}
+                  aria-valuenow={axisValues[axis.id] || 3}
+                />
+              </div>
               
-              <div className="flex justify-between text-sm text-gray-600">
+              <div className="flex justify-between text-sm text-gray-600 font-medium">
                 <span>{axis.minLabel || 'Low'}</span>
                 <span>{axis.maxLabel || 'High'}</span>
               </div>
