@@ -35,18 +35,29 @@ export class WellnessDatabase extends Dexie {
     // Version 2: Updated schema with axes belonging to topics
     this.version(2).stores({
       axes: 'id, topicId, name, createdAt',
-      topics: 'id, name, createdAt',
+      topics: 'id, name, displayOrder, createdAt',
       events: 'id, topicId, timestamp, createdAt',
       reminders: 'id, name, isActive, triggerEventTopicId, nextScheduled',
       reminderInstances: 'id, reminderId, scheduledTime, status',
       users: 'id, email, supabaseId',
       settings: 'id, userId',
     }).upgrade(async tx => {
-      // Migration: Clear old data and reinitialize
-      // This is safe for development - in production you'd want more sophisticated migration
-      await tx.table('axes').clear();
-      await tx.table('topics').clear();
-      await tx.table('events').clear();
+      // Migration: Add displayOrder to existing topics
+      const topics = await tx.table('topics').toArray();
+      for (let i = 0; i < topics.length; i++) {
+        await tx.table('topics').update(topics[i].id, {
+          displayOrder: topics[i].displayOrder !== undefined ? topics[i].displayOrder : i
+        });
+      }
+      
+      // Update axes to have topicId if needed
+      const axes = await tx.table('axes').toArray();
+      for (const axis of axes) {
+        if (!axis.topicId) {
+          // Assign orphaned axes to wellness topic or delete them
+          await tx.table('axes').delete(axis.id);
+        }
+      }
     });
   }
 }
@@ -55,9 +66,9 @@ export const db = new WellnessDatabase();
 
 // Initialize default data
 export async function initializeDefaultData() {
-  const axesCount = await db.axes.count();
+  const topicsCount = await db.topics.count();
   
-  if (axesCount === 0) {
+  if (topicsCount === 0) {
     // Create default topics first
     const defaultTopics: Topic[] = [
       {
@@ -66,6 +77,7 @@ export async function initializeDefaultData() {
         description: 'Track your mental, physical, and emotional wellbeing',
         icon: '✨',
         color: '#A78BFA',
+        displayOrder: 0,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       },
@@ -75,6 +87,7 @@ export async function initializeDefaultData() {
         description: 'Start of the day',
         icon: '🌅',
         color: '#FCD34D',
+        displayOrder: 1,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       },
@@ -84,12 +97,16 @@ export async function initializeDefaultData() {
         description: 'ADHD medication',
         icon: '💊',
         color: '#60A5FA',
+        displayOrder: 2,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       },
     ];
     
-    await db.topics.bulkAdd(defaultTopics);
+    // Use put instead of bulkAdd to handle duplicates
+    for (const topic of defaultTopics) {
+      await db.topics.put(topic);
+    }
     
     // Create default wellness axes (belonging to Wellness topic)
     const wellnessAxes: Axis[] = [
@@ -128,6 +145,9 @@ export async function initializeDefaultData() {
       },
     ];
     
-    await db.axes.bulkAdd(wellnessAxes);
+    // Use put instead of bulkAdd to handle duplicates
+    for (const axis of wellnessAxes) {
+      await db.axes.put(axis);
+    }
   }
 }

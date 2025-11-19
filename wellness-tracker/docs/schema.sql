@@ -29,6 +29,7 @@ CREATE TABLE topics (
   description TEXT,
   icon TEXT,
   color TEXT,
+  display_order INTEGER DEFAULT 0,
   created_at BIGINT NOT NULL,
   updated_at BIGINT NOT NULL
 );

@@ -16,6 +16,7 @@ export interface Topic {
   description?: string;
   icon?: string;
   color?: string;
+  displayOrder: number;
   createdAt: number;
   updatedAt: number;
 }

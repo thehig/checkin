@@ -2,15 +2,90 @@ import { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useNotification } from '../contexts/NotificationContext';
 import type { Topic, EventAxis } from '../types';
-import { Check } from 'lucide-react';
+import { Check, GripVertical } from 'lucide-react';
 
 export function QuickEntry() {
-  const { topics, getAxesByTopic, addEvent } = useData();
+  const { topics, getAxesByTopic, addEvent, reorderTopics, syncStatus } = useData();
   const { showSuccess, showError } = useNotification();
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [axisValues, setAxisValues] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState('');
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const getSyncIndicatorColor = () => {
+    switch (syncStatus) {
+      case 'synced':
+        return 'bg-green-500';
+      case 'syncing':
+      case 'offline':
+        return 'bg-yellow-500';
+      case 'error':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-400';
+    }
+  };
+
+  const getSyncIndicatorTitle = () => {
+    switch (syncStatus) {
+      case 'synced':
+        return 'All synced';
+      case 'syncing':
+        return 'Syncing...';
+      case 'offline':
+        return 'Offline';
+      case 'error':
+        return 'Sync error';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const reordered = [...topics];
+    const [removed] = reordered.splice(draggedIndex, 1);
+    reordered.splice(dropIndex, 0, removed);
+
+    try {
+      await reorderTopics(reordered);
+      showSuccess('Topic order updated');
+    } catch (error) {
+      showError('Failed to reorder topics');
+    }
+
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
 
   const handleTopicSelect = (topic: Topic) => {
     setSelectedTopic(topic);
@@ -76,24 +151,50 @@ export function QuickEntry() {
     return (
       <div className="space-y-4">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">What happened?</h1>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900">What happened?</h1>
+            <div 
+              className={`w-3 h-3 rounded-full ${getSyncIndicatorColor()} animate-pulse`}
+              title={getSyncIndicatorTitle()}
+            />
+          </div>
           <p className="text-gray-600 mt-1">Select a topic to log</p>
+          <p className="text-xs text-gray-500 mt-2">Drag to reorder</p>
         </div>
         
         <div className="grid grid-cols-2 gap-3">
-          {topics.map(topic => (
-            <button
+          {topics.map((topic, index) => (
+            <div
               key={topic.id}
-              onClick={() => handleTopicSelect(topic)}
-              className="card hover:shadow-md transition-all p-6 text-center space-y-2"
-              style={{ borderColor: topic.color }}
+              draggable
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, index)}
+              onDragEnd={handleDragEnd}
+              className={`relative ${
+                dragOverIndex === index && draggedIndex !== index
+                  ? 'ring-2 ring-primary-500'
+                  : ''
+              }`}
             >
-              <div className="text-4xl">{topic.icon || '📝'}</div>
-              <div className="font-semibold text-gray-900">{topic.name}</div>
-              {topic.description && (
-                <div className="text-xs text-gray-500">{topic.description}</div>
-              )}
-            </button>
+              <button
+                onClick={() => handleTopicSelect(topic)}
+                className={`card hover:shadow-md transition-all p-6 text-center space-y-2 w-full ${
+                  draggedIndex === index ? 'opacity-50' : ''
+                }`}
+                style={{ borderColor: topic.color }}
+              >
+                <div className="absolute top-2 left-2 text-gray-400 cursor-move">
+                  <GripVertical className="w-4 h-4" />
+                </div>
+                <div className="text-4xl">{topic.icon || '📝'}</div>
+                <div className="font-semibold text-gray-900">{topic.name}</div>
+                {topic.description && (
+                  <div className="text-xs text-gray-500">{topic.description}</div>
+                )}
+              </button>
+            </div>
           ))}
         </div>
       </div>

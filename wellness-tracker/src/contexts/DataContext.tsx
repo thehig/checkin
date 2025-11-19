@@ -34,6 +34,7 @@ interface DataContextType {
   addTopic: (topic: Omit<Topic, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   updateTopic: (id: string, updates: Partial<Topic>) => Promise<void>;
   deleteTopic: (id: string) => Promise<void>;
+  reorderTopics: (reorderedTopics: Topic[]) => Promise<void>;
   
   // Events operations
   addEvent: (event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
@@ -73,7 +74,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const refresh = async () => {
     const [axesData, topicsData, eventsData, remindersData, instancesData] = await Promise.all([
       db.axes.toArray(),
-      db.topics.toArray(),
+      db.topics.orderBy('displayOrder').toArray(),
       db.events.orderBy('timestamp').reverse().toArray(),
       db.reminders.toArray(),
       db.reminderInstances.orderBy('scheduledTime').toArray(),
@@ -216,7 +217,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const addTopic = async (topic: Omit<Topic, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `topic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = Date.now();
-    await db.topics.add({ ...topic, id, createdAt: now, updatedAt: now });
+    // Set displayOrder to be the highest + 1
+    const maxOrder = topics.length > 0 ? Math.max(...topics.map(t => t.displayOrder)) : -1;
+    await db.topics.add({ ...topic, id, displayOrder: maxOrder + 1, createdAt: now, updatedAt: now });
     await refresh();
     if (autoSyncEnabled) setSyncQueue(prev => new Set(prev).add('topics'));
     return id;
@@ -234,6 +237,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       await deleteFromCloud('topics', id, currentUserId);
     }
     await refresh();
+  };
+
+  const reorderTopics = async (reorderedTopics: Topic[]) => {
+    const now = Date.now();
+    // Update displayOrder for each topic
+    for (let i = 0; i < reorderedTopics.length; i++) {
+      await db.topics.update(reorderedTopics[i].id, {
+        displayOrder: i,
+        updatedAt: now,
+      });
+    }
+    await refresh();
+    if (autoSyncEnabled) setSyncQueue(prev => new Set(prev).add('topics'));
   };
 
   // Events operations
@@ -356,6 +372,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addTopic,
     updateTopic,
     deleteTopic,
+    reorderTopics,
     addEvent,
     updateEvent,
     deleteEvent,
